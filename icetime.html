@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IceTime - Premium Handcrafted Ice Cream & Luxury Desserts</title>
+  <meta name="description" content="Freeze the moment with IceTime. Premium, handcrafted, and freshly frozen luxury desserts delivered to your doorstep.">
+  
+  <!-- Font Integrations -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            iceBlue: '#7DD3FC',
+            icePink: '#F9A8D4',
+            creamWhite: '#FFF7ED',
+            chocolate: '#7C4A2D',
+            creamDark: '#0B0F19',
+            cardDark: '#1E293B',
+          },
+          fontFamily: {
+            syne: ['Syne', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+          },
+          animation: {
+            'spin-slow': 'spin 12s linear infinite',
+            'float-slow': 'float 6s ease-in-out infinite',
+            'float-medium': 'float 4s ease-in-out infinite',
+            'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Core Styles -->
+  <style>
+    /* Custom Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(3deg); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(125, 211, 252, 0.4)); }
+      50% { filter: drop-shadow(0 0 25px rgba(249, 168, 212, 0.7)); }
+    }
+    
+    /* Scrollbar Style */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FFF7ED;
+    }
+    .dark ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #F9A8D4;
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #7DD3FC;
+    }
+
+    /* Custom Cursor Styles */
+    .custom-cursor {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #F9A8D4;
+      border-radius: 50%;
+      position: fixed;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 9999;
+      transition: width 0.2s, height 0.2s, background-color 0.2s;
+    }
+    .custom-cursor-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #7DD3FC;
+      border-radius: 50%;
+      position: fixed;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .hover-active {
+      width: 40px;
+      height: 40px;
+      background-color: rgba(249, 168, 212, 0.2);
+      border-color: #7DD3FC;
+    }
+
+    /* Glassmorphism utility */
+    .glassmorphism {
+      background: rgba(255, 247, 237, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .dark .glassmorphism {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* 3D Tilt Card Base */
+    .tilt-card-container {
+      perspective: 1000px;
+    }
+    .tilt-card {
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      transform-style: preserve-3d;
+    }
+
+    /* Hide horizontal scrollbar for Showcase container */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+
+  <!-- GSAP & ScrollTrigger & Lucide Icons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-creamWhite text-chocolate font-outfit overflow-x-hidden dark:bg-creamDark dark:text-creamWhite transition-colors duration-300">
+
+  <!-- Custom Cursor Elements -->
+  <div class="custom-cursor hidden md:block" id="customCursor"></div>
+  <div class="custom-cursor-dot hidden md:block" id="customCursorDot"></div>
+
+  <!-- Interactive Canvas Particle Background -->
+  <canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-10"></canvas>
+
+  <!-- Preloader Screen -->
+  <div id="preloader" class="fixed inset-0 bg-creamDark z-[99999] flex flex-col items-center justify-center text-creamWhite overflow-hidden">
+    <div class="relative flex flex-col items-center">
+      <!-- Rotating & Glowing Preloader SVG -->
+      <div class="w-32 h-32 mb-6 relative animate-float-medium">
+        <svg class="w-full h-full drop-shadow-[0_0_20px_rgba(125,211,252,0.8)]" viewBox="0 0 100 100" fill="none">
+          <!-- Cone Outline drawing -->
+          <path id="preloader-cone" d="M 50,75 L 35,50 L 65,50 Z" stroke="#F9A8D4" stroke-width="2" stroke-linejoin="round" fill="none"/>
+          <!-- Crystal Ice Outline -->
+          <polygon id="preloader-crystal" points="50,15 58,28 50,40 42,28" stroke="#7DD3FC" stroke-width="2" fill="none"/>
+          <!-- Dripping Scoop Outline -->
+          <path id="preloader-scoop" d="M 32,50 C 25,50 25,40 32,35 C 32,25 45,20 50,28 C 55,20 68,25 68,35 C 75,40 75,50 68,50 Z" stroke="#FFF7ED" stroke-width="2" fill="none"/>
+        </svg>
+        <span class="absolute inset-0 flex items-center justify-center text-xs tracking-widest uppercase font-semibold text-iceBlue animate-pulse">
+          Freezing
+        </span>
+      </div>
+      <h1 class="font-syne font-extrabold text-3xl tracking-wide flex items-center gap-1">
+        <span class="text-iceBlue">Ice</span><span>Time</span>
+      </h1>
+      <div class="w-48 h-[2px] bg-slate-800 rounded-full mt-4 overflow-hidden relative">
+        <div id="preload-progress" class="absolute top-0 left-0 h-full w-0 bg-gradient-to-r from-iceBlue to-icePink rounded-full transition-all duration-300"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="fixed top-0 left-0 w-full z-50 transition-all duration-300 px-6 py-4">
+    <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 rounded-2xl glassmorphism shadow-lg border border-white/20">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-2 group cursor-pointer">
+        <svg class="h-10 w-auto filter drop-shadow-sm group-hover:scale-105 transition-transform" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,38 L 22,50 L 38,50 Z" fill="#7C4A2D" stroke="#7C4A2D" stroke-width="2" stroke-linejoin="round" />
+          <path d="M 26,44 L 34,44" stroke="#FFF7ED" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+          <path d="M 24,47 L 36,47" stroke="#FFF7ED" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+          <path d="M 20,38 C 16,38 14,32 18,28 C 16,22 22,18 26,20 C 30,16 38,18 38,24 C 42,24 44,30 42,34 C 40,38 38,38 38,38 C 36,41 33,39 30,39 C 27,39 24,41 22,38 Z" fill="url(#headerScoopGrad)" />
+          <circle cx="21" cy="42" r="2" fill="#F9A8D4" />
+          <circle cx="37" cy="40" r="1.5" fill="#7DD3FC" />
+          <polygon points="30,12 34,18 30,24 26,18" fill="#7DD3FC" opacity="0.9" />
+          <text x="60" y="38" font-family="Syne" font-weight="800" font-size="26" class="fill-chocolate dark:fill-creamWhite">
+            <tspan fill="url(#headerTextGrad)">Ice</tspan>Time
+          </text>
+          <defs>
+            <linearGradient id="headerScoopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#F9A8D4" />
+              <stop offset="100%" stop-color="#7DD3FC" />
+            </linearGradient>
+            <linearGradient id="headerTextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#7DD3FC" />
+              <stop offset="100%" stop-color="#F9A8D4" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <div class="hidden md:flex items-center gap-8 font-medium">
+        <a href="#flavors" class="hover:text-icePink hover-scale transition-colors cursor-pointer">Flavors</a>
+        <a href="#why-choose" class="hover:text-icePink hover-scale transition-colors cursor-pointer">Why Us</a>
+        <a href="#showcase" class="hover:text-icePink hover-scale transition-colors cursor-pointer">Showcase</a>
+        <a href="#offers" class="hover:text-icePink hover-scale transition-colors cursor-pointer">Offers</a>
+        <a href="#gallery" class="hover:text-icePink hover-scale transition-colors cursor-pointer">Gallery</a>
+      </div>
+
+      <!-- Action Area -->
+      <div class="flex items-center gap-4">
+        <!-- Light/Dark Mode Switcher -->
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors hover-scale cursor-pointer" aria-label="Toggle Theme">
+          <i data-lucide="sun" class="w-5 h-5 block dark:hidden text-chocolate"></i>
+          <i data-lucide="moon" class="w-5 h-5 hidden dark:block text-iceBlue"></i>
+        </button>
+
+        <!-- CTA Button -->
+        <a href="#offers" class="hidden sm:inline-block px-5 py-2.5 bg-gradient-to-r from-icePink to-iceBlue text-slate-900 rounded-full font-bold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
+          Order Now
+        </a>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button id="mobileMenuBtn" class="md:hidden p-2 text-chocolate dark:text-creamWhite cursor-pointer">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobileDrawer" class="hidden md:hidden mt-2 bg-creamWhite/95 dark:bg-creamDark/95 border border-white/20 backdrop-blur-md rounded-2xl p-6 flex flex-col gap-4 shadow-xl">
+      <a href="#flavors" class="text-lg font-bold hover:text-icePink cursor-pointer py-1">Flavors</a>
+      <a href="#why-choose" class="text-lg font-bold hover:text-icePink cursor-pointer py-1">Why Us</a>
+      <a href="#showcase" class="text-lg font-bold hover:text-icePink cursor-pointer py-1">Showcase</a>
+      <a href="#offers" class="text-lg font-bold hover:text-icePink cursor-pointer py-1">Offers</a>
+      <a href="#gallery" class="text-lg font-bold hover:text-icePink cursor-pointer py-1">Gallery</a>
+      <a href="#offers" class="w-full text-center py-3 bg-gradient-to-r from-icePink to-iceBlue text-slate-900 rounded-xl font-bold mt-2 cursor-pointer block">
+        Order Now
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-12 select-none z-20">
+    <!-- Media background loop: clear visibility of ice creams -->
+    <div class="absolute inset-0 w-full h-full pointer-events-none">
+      <video id="heroVideo" autoplay muted loop playsinline class="w-full h-full object-cover opacity-80 dark:opacity-40">
+        <source src="795450b40cae20a9407d551ed454081f_720w.mp4" type="video/mp4">
+      </video>
+      <!-- Premium gradient overlay to blend video beautifully and ensure text legibility -->
+      <div class="absolute inset-0 bg-gradient-to-r from-creamWhite via-creamWhite/40 to-transparent dark:from-creamDark dark:via-creamDark/40 dark:to-transparent"></div>
+    </div>
+
+    <!-- Soft Animated Background Orbs -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-icePink/30 dark:bg-icePink/15 rounded-full filter blur-[100px] animate-spin-slow"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-iceBlue/30 dark:bg-iceBlue/15 rounded-full filter blur-[120px] animate-float-slow"></div>
+
+    <div class="max-w-7xl mx-auto px-6 w-full relative grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Left Content Column -->
+      <div class="lg:col-span-7 flex flex-col justify-center text-left space-y-6 z-30">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-icePink/20 dark:bg-icePink/10 text-xs font-bold uppercase tracking-widest border border-icePink/30 self-start shadow-sm">
+          <i data-lucide="sparkles" class="w-4 h-4 text-icePink"></i>
+          <span>Welcome to the Ice Age of Sweets</span>
+        </div>
+        
+        <h1 class="font-syne font-extrabold text-5xl md:text-7xl leading-tight tracking-tight">
+          Freeze The <br class="hidden md:block">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-iceBlue via-icePink to-chocolate dark:to-yellow-300">Moment</span> With <br>
+          <span class="relative">
+            IceTime
+            <!-- Dripping ink/cream underneath text -->
+            <svg class="absolute -bottom-6 left-0 w-full h-6 text-icePink pointer-events-none overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
+              <path d="M 0,5 Q 12.5,0 25,5 Q 37.5,10 50,5 Q 62.5,0 75,5 Q 87.5,10 100,5 L 100,20 L 0,20 Z" fill="currentColor" />
+            </svg>
+          </span>
+        </h1>
+
+        <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-xl font-normal leading-relaxed">
+          Step into a wonderland of sub-zero luxury. Indulge in artisan ice creams whipped daily from pure organic cream, natural sugars, and frozen berries.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4 pt-4">
+          <a href="#flavors" class="px-8 py-4 bg-chocolate text-creamWhite dark:bg-creamWhite dark:text-chocolate rounded-full font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer">
+            Explore Flavors
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </a>
+          <a href="#offers" class="px-8 py-4 glassmorphism rounded-full font-bold shadow-md hover:shadow-xl hover:bg-white/35 dark:hover:bg-slate-800/50 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
+            Order Now
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive 3D Parallax Scoops -->
+      <div class="lg:col-span-5 h-[400px] md:h-[500px] relative flex items-center justify-center z-20" id="hero-parallax-container">
+        
+        <!-- Center Waffle Cone Base -->
+        <div class="absolute w-56 h-auto drop-shadow-2xl z-10 hover:scale-105 transition-transform duration-300" data-depth="0.1">
+          <svg class="w-full h-full" viewBox="0 0 100 120" fill="none">
+            <!-- Cone -->
+            <path d="M 30,50 L 50,110 L 70,50 Z" fill="#7C4A2D" stroke="#5C3317" stroke-width="2" stroke-linejoin="round" />
+            <!-- Waffle pattern grid -->
+            <path d="M 35,65 L 65,65 M 39,77 L 61,77 M 43,89 L 57,89 M 48,101 L 52,101" stroke="#FFF7ED" stroke-width="1.5" stroke-linecap="round" opacity="0.25"/>
+            <path d="M 30,50 L 50,110 M 70,50 L 50,110 M 40,50 L 50,110 M 60,50 L 50,110" stroke="#FFF7ED" stroke-width="1" stroke-linecap="round" opacity="0.15"/>
+          </svg>
+        </div>
+
+        <!-- Scoop 1 (Melting Pink Strawberry) - Parallax layer -->
+        <div class="absolute w-44 h-44 -mt-16 mr-6 drop-shadow-2xl z-20 animate-float-slow cursor-grab active:cursor-grabbing" data-depth="0.3" id="scoop-pink">
+          <svg class="w-full h-full filter drop-shadow-md" viewBox="0 0 100 100">
+            <!-- Scoop circles -->
+            <circle cx="50" cy="50" r="35" fill="url(#pinkScoop)" />
+            <!-- Highlight -->
+            <ellipse cx="38" cy="35" rx="12" ry="7" fill="#FFFFFF" opacity="0.3" transform="rotate(-25 38 35)"/>
+            <!-- Dripping detail -->
+            <path d="M 20,62 C 20,70 30,68 30,75 C 30,80 40,78 40,84 C 40,90 55,80 55,75 C 55,68 70,72 70,60 C 70,50 65,48 50,48" fill="#F9A8D4" />
+            <!-- Little Sprinkle Dots -->
+            <rect x="35" y="30" width="8" height="3" rx="1" fill="#7DD3FC" transform="rotate(30 35 30)"/>
+            <rect x="62" y="36" width="8" height="3" rx="1" fill="#FFF7ED" transform="rotate(-40 62 36)"/>
+            <rect x="48" y="55" width="8" height="3" rx="1" fill="#7C4A2D" transform="rotate(15 48 55)"/>
+            <!-- Gradients -->
+            <defs>
+              <radialGradient id="pinkScoop" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#FFD6EC"/>
+                <stop offset="60%" stop-color="#F9A8D4"/>
+                <stop offset="100%" stop-color="#E272AA"/>
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <!-- Scoop 2 (Cool Ice Blue Blueberry) - Parallax layer -->
+        <div class="absolute w-36 h-36 -mt-36 -ml-16 drop-shadow-2xl z-30 animate-float-medium cursor-grab active:cursor-grabbing" data-depth="0.4" id="scoop-blue">
+          <svg class="w-full h-full" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="35" fill="url(#blueScoop)" />
+            <ellipse cx="38" cy="35" rx="12" ry="7" fill="#FFFFFF" opacity="0.35" transform="rotate(-25 38 35)"/>
+            <path d="M 22,60 C 22,65 28,65 32,70 C 36,75 42,70 48,76 C 54,82 64,72 68,68 C 72,64 74,60 70,55" fill="#7DD3FC"/>
+            <!-- Sprinkles -->
+            <rect x="42" y="32" width="8" height="3" rx="1" fill="#F9A8D4" transform="rotate(10 42 32)"/>
+            <rect x="58" y="44" width="8" height="3" rx="1" fill="#FFF7ED" transform="rotate(65 58 44)"/>
+            <!-- Gradients -->
+            <defs>
+              <radialGradient id="blueScoop" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#E0F2FE"/>
+                <stop offset="60%" stop-color="#7DD3FC"/>
+                <stop offset="100%" stop-color="#0284C7"/>
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <!-- Floating Accessories (Mint Leaves and Ice Crystals) -->
+        <div class="absolute w-12 h-12 top-10 right-12 drop-shadow-lg z-40 animate-bounce cursor-pointer hover:scale-110 transition-transform" data-depth="0.5">
+          <!-- Mint Leaf SVG -->
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M 50,10 C 15,35 25,85 50,90 C 75,85 85,35 50,10 Z" fill="#10B981"/>
+            <path d="M 50,10 L 50,90 M 50,30 L 25,45 M 50,45 L 75,55 M 50,60 L 30,70 M 50,75 L 70,82" stroke="#6EE7B7" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="absolute w-8 h-8 bottom-24 left-6 drop-shadow-md z-40 animate-pulse cursor-pointer hover:scale-110 transition-transform" data-depth="0.6">
+          <!-- Ice Diamond Crystal SVG -->
+          <svg viewBox="0 0 100 100" fill="none">
+            <polygon points="50,10 90,50 50,90 10,50" fill="#E0F2FE" opacity="0.9" />
+            <polygon points="50,25 75,50 50,75 25,50" fill="#7DD3FC" opacity="0.6" />
+          </svg>
+        </div>
+
+        <div class="absolute w-10 h-10 top-1/2 left-2/3 drop-shadow-lg z-40 animate-float-slow cursor-pointer" data-depth="0.2">
+          <!-- Strawberry slice -->
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M 10,50 C 10,85 90,85 90,50 C 90,15 10,15 10,50 Z" fill="#EF4444"/>
+            <path d="M 20,50 C 20,75 80,75 80,50 C 80,25 20,25 20,50 Z" fill="#FCA5A5"/>
+            <circle cx="50" cy="50" r="10" fill="#FFF7ED"/>
+            <!-- Seeds -->
+            <circle cx="35" cy="40" r="2.5" fill="#FFE4E6"/>
+            <circle cx="65" cy="45" r="2.5" fill="#FFE4E6"/>
+            <circle cx="45" cy="60" r="2.5" fill="#FFE4E6"/>
+          </svg>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Melting Drip divider at the bottom of hero -->
+    <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-30">
+      <svg class="relative block w-full h-[50px] md:h-[90px] text-icePink/20 dark:text-slate-800" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,0 Q150,120 300,50 Q450,-20 600,60 Q750,140 900,40 Q1050,-20 1200,30 L1200,120 L0,120 Z" fill="currentColor"></path>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Featured Flavors Section -->
+  <section id="flavors" class="py-24 relative z-20 bg-gradient-to-b from-icePink/20 to-creamWhite dark:from-slate-800 dark:to-creamDark">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <!-- Section Heading -->
+      <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <span class="text-icePink font-bold uppercase tracking-wider text-sm flex justify-center items-center gap-1.5">
+          <i data-lucide="cookie" class="w-4 h-4"></i> Curated Selections
+        </span>
+        <h2 class="font-syne font-extrabold text-4xl md:text-5xl">Taste The Extravagance</h2>
+        <div class="w-20 h-[3px] bg-gradient-to-r from-iceBlue to-icePink mx-auto rounded-full"></div>
+        <p class="text-slate-600 dark:text-slate-300">
+          Six signature creations sculpted by our master ice-artisians. Choose your dream flavor and drift away.
+        </p>
+      </div>
+
+      <!-- Grid of 6 glassmorphic tilt cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 tilt-card-container">
+        
+        <!-- Flavor Card 1: Chocolate Heaven -->
+        <div class="tilt-card relative overflow-hidden rounded-3xl p-8 glassmorphism shadow-xl group border-t-2 border-l-2 border-white/20 dark:border-white/5 cursor-pointer hover:shadow-2xl flex flex-col justify-between h-[420px]" data-color="#7C4A2D">
+          <div class="absolute inset-0 bg-gradient-to-br from-chocolate/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <!-- Melting background decoration -->
+          <div class="absolute top-0 right-0 w-36 h-36 bg-chocolate/10 rounded-full filter blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          
+          <div>
+            <div class="flex justify-between items-start">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-chocolate/20 text-chocolate dark:text-amber-200">Signature</span>
+              <i data-lucide="heart" class="w-5 h-5 text-slate-400 hover:text-red-400 transition-colors"></i>
+            </div>
+            
+            <div class="relative w-44 h-44 mx-auto my-4 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
+              <!-- Animated SVG model of chocolate cone/scoop -->
+              <svg viewBox="0 0 100 100" class="w-full h-full animate-float-slow">
+                <circle cx="50" cy="45" r="28" fill="url(#chocGrad)"/>
+                <!-- Dripping chocolate -->
+                <path d="M 22,45 C 22,60 30,55 35,62 C 40,70 45,60 50,68 C 55,75 62,60 68,65 C 74,70 78,55 78,45" fill="#7C4A2D"/>
+                <circle cx="35" cy="45" r="3" fill="#FFE4C4"/>
+                <circle cx="65" cy="38" r="3" fill="#FFE4C4"/>
+                <!-- Gradients -->
+                <defs>
+                  <radialGradient id="chocGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#A16A46"/>
+                    <stop offset="70%" stop-color="#7C4A2D"/>
+                    <stop offset="100%" stop-color="#4C2814"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="space-y-2 z-10">
+            <h3 class="font-syne font-extrabold text-2xl group-hover:text-chocolate dark:group-hover:text-amber-200 transition-colors">Chocolate Heaven</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+              Rich Belgian double chocolate fused with handcrafted cacao chunks and hot dark fudge swirls.
+            </p>
+            <div class="flex justify-between items-center pt-2">
+              <span class="font-bold text-xl">$8.50</span>
+              <button class="p-2.5 bg-chocolate text-creamWhite rounded-full hover:bg-slate-900 transition-colors hover-scale">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flavor Card 2: Strawberry Bliss -->
+        <div class="tilt-card relative overflow-hidden rounded-3xl p-8 glassmorphism shadow-xl group border-t-2 border-l-2 border-white/20 dark:border-white/5 cursor-pointer hover:shadow-2xl flex flex-col justify-between h-[420px]" data-color="#F9A8D4">
+          <div class="absolute inset-0 bg-gradient-to-br from-icePink/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="absolute top-0 right-0 w-36 h-36 bg-icePink/20 rounded-full filter blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          
+          <div>
+            <div class="flex justify-between items-start">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-icePink/30 text-slate-800 dark:text-icePink">Best Seller</span>
+              <i data-lucide="heart" class="w-5 h-5 text-slate-400 hover:text-red-400 transition-colors"></i>
+            </div>
+            
+            <div class="relative w-44 h-44 mx-auto my-4 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" class="w-full h-full animate-float-medium">
+                <circle cx="50" cy="45" r="28" fill="url(#strawberryGrad)"/>
+                <!-- Strawberry chunks & drips -->
+                <path d="M 22,45 C 22,55 34,50 38,58 C 42,66 48,58 54,64 C 60,70 66,56 72,60 C 78,64 78,50 78,45" fill="#E272AA" />
+                <circle cx="48" cy="35" r="2.5" fill="#FFF7ED"/>
+                <circle cx="58" cy="50" r="2.5" fill="#FFF7ED"/>
+                <defs>
+                  <radialGradient id="strawberryGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#FFD6EC"/>
+                    <stop offset="60%" stop-color="#F9A8D4"/>
+                    <stop offset="100%" stop-color="#D946EF"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="space-y-2 z-10">
+            <h3 class="font-syne font-extrabold text-2xl group-hover:text-pink-600 dark:group-hover:text-icePink transition-colors">Strawberry Bliss</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+              Freshly blended garden-ripe strawberries swirled into sweet vanilla cream with wafer crust chunks.
+            </p>
+            <div class="flex justify-between items-center pt-2">
+              <span class="font-bold text-xl">$7.90</span>
+              <button class="p-2.5 bg-chocolate text-creamWhite dark:bg-creamWhite dark:text-chocolate rounded-full hover:bg-slate-900 transition-colors hover-scale">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flavor Card 3: Vanilla Dream -->
+        <div class="tilt-card relative overflow-hidden rounded-3xl p-8 glassmorphism shadow-xl group border-t-2 border-l-2 border-white/20 dark:border-white/5 cursor-pointer hover:shadow-2xl flex flex-col justify-between h-[420px]" data-color="#FFF7ED">
+          <div class="absolute inset-0 bg-gradient-to-br from-yellow-100/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="absolute top-0 right-0 w-36 h-36 bg-yellow-100/30 rounded-full filter blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          
+          <div>
+            <div class="flex justify-between items-start">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100/60 text-slate-800">Classic</span>
+              <i data-lucide="heart" class="w-5 h-5 text-slate-400 hover:text-red-400 transition-colors"></i>
+            </div>
+            
+            <div class="relative w-44 h-44 mx-auto my-4 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" class="w-full h-full animate-float-slow">
+                <circle cx="50" cy="45" r="28" fill="url(#vanillaGrad)"/>
+                <path d="M 22,45 C 22,50 30,52 34,56 C 38,60 44,54 48,62 C 52,70 58,58 64,62 C 70,66 78,54 78,45" fill="#EAE0D5"/>
+                <circle cx="52" cy="35" r="2" fill="#E2B13C" />
+                <defs>
+                  <radialGradient id="vanillaGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#FFFFFF"/>
+                    <stop offset="70%" stop-color="#FDF6E2"/>
+                    <stop offset="100%" stop-color="#E1D7B7"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="space-y-2 z-10">
+            <h3 class="font-syne font-extrabold text-2xl group-hover:text-yellow-600 transition-colors">Vanilla Dream</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+              Silky Madagascar vanilla bean whipped into organic heavy cream with golden honey drizzles.
+            </p>
+            <div class="flex justify-between items-center pt-2">
+              <span class="font-bold text-xl">$7.00</span>
+              <button class="p-2.5 bg-chocolate text-creamWhite dark:bg-creamWhite dark:text-chocolate rounded-full hover:bg-slate-900 transition-colors hover-scale">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flavor Card 4: Blueberry Frost -->
+        <div class="tilt-card relative overflow-hidden rounded-3xl p-8 glassmorphism shadow-xl group border-t-2 border-l-2 border-white/20 dark:border-white/5 cursor-pointer hover:shadow-2xl flex flex-col justify-between h-[420px]" data-color="#7DD3FC">
+          <div class="absolute inset-0 bg-gradient-to-br from-iceBlue/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="absolute top-0 right-0 w-36 h-36 bg-iceBlue/20 rounded-full filter blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          
+          <div>
+            <div class="flex justify-between items-start">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-iceBlue/30 text-slate-800 dark:text-iceBlue">Ice Cold</span>
+              <i data-lucide="heart" class="w-5 h-5 text-slate-400 hover:text-red-400 transition-colors"></i>
+            </div>
+            
+            <div class="relative w-44 h-44 mx-auto my-4 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" class="w-full h-full animate-float-medium">
+                <circle cx="50" cy="45" r="28" fill="url(#blueberryGrad)"/>
+                <path d="M 22,45 C 22,50 28,52 32,58 C 36,64 42,54 48,60 C 54,66 60,56 64,62 C 68,68 78,54 78,45" fill="#475569" opacity="0.3"/>
+                <polygon points="50,25 54,32 50,39 46,32" fill="#E0F2FE" opacity="0.8" />
+                <defs>
+                  <radialGradient id="blueberryGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#E0F2FE"/>
+                    <stop offset="60%" stop-color="#7DD3FC"/>
+                    <stop offset="100%" stop-color="#3B82F6"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="space-y-2 z-10">
+            <h3 class="font-syne font-extrabold text-2xl group-hover:text-blue-500 dark:group-hover:text-iceBlue transition-colors">Blueberry Frost</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+              Wild mountain blueberries infused with cool menthol crystals and a light squeeze of lemon zest.
+            </p>
+            <div class="flex justify-between items-center pt-2">
+              <span class="font-bold text-xl">$8.90</span>
+              <button class="p-2.5 bg-chocolate text-creamWhite dark:bg-creamWhite dark:text-chocolate rounded-full hover:bg-slate-900 transition-colors hover-scale">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flavor Card 5: Mango Magic -->
+        <div class="tilt-card relative overflow-hidden rounded-3xl p-8 glassmorphism shadow-xl group border-t-2 border-l-2 border-white/20 dark:border-white/5 cursor-pointer hover:shadow-2xl flex flex-col justify-between h-[420px]" data-color="#FDE047">
+          <div class="absolute inset-0 bg-gradient-to-br from-yellow-300/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="absolute top-0 right-0 w-36 h-36 bg-yellow-300/20 rounded-full filter blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          
+          <div>
+            <div class="flex justify-between items-start">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-300/30 text-slate-800">Tropical</span>
+              <i data-lucide="heart" class="w-5 h-5 text-slate-400 hover:text-red-400 transition-colors"></i>
+            </div>
+            
+            <div class="relative w-44 h-44 mx-auto my-4 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" class="w-full h-full animate-float-slow">
+                <circle cx="50" cy="45" r="28" fill="url(#mangoGrad)"/>
+                <path d="M 22,45 C 22,50 30,52 34,56 C 38,60 44,54 48,62 C 52,70 58,58 64,62 C 70,66 78,54 78,45" fill="#EAB308" opacity="0.4"/>
+                <defs>
+                  <radialGradient id="mangoGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#FEF08A"/>
+                    <stop offset="60%" stop-color="#FDE047"/>
+                    <stop offset="100%" stop-color="#EA580C"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="space-y-2 z-10">
+            <h3 class="font-syne font-extrabold text-2xl group-hover:text-yellow-600 transition-colors">Mango Magic</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+              Vibrant Alphonso mango chunks blended with organic coconut milk and lime leaves.
+            </p>
+            <div class="flex justify-between items-center pt-2">
+              <span class="font-bold text-xl">$8.20</span>
+              <button class="p-2.5 bg-chocolate text-creamWhite dark:bg-creamWhite dark:text-chocolate rounded-full hover:bg-slate-900 transition-colors hover-scale">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flavor Card 6: Mint Chill -->
+        <div class="tilt-card relative overflow-hidden rounded-3xl p-8 glassmorphism shadow-xl group border-t-2 border-l-2 border-white/20 dark:border-white/5 cursor-pointer hover:shadow-2xl flex flex-col justify-between h-[420px]" data-color="#6EE7B7">
+          <div class="absolute inset-0 bg-gradient-to-br from-green-300/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="absolute top-0 right-0 w-36 h-36 bg-green-300/20 rounded-full filter blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+          
+          <div>
+            <div class="flex justify-between items-start">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-green-300/30 text-slate-800 dark:text-green-300">Refreshing</span>
+              <i data-lucide="heart" class="w-5 h-5 text-slate-400 hover:text-red-400 transition-colors"></i>
+            </div>
+            
+            <div class="relative w-44 h-44 mx-auto my-4 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" class="w-full h-full animate-float-medium">
+                <circle cx="50" cy="45" r="28" fill="url(#mintGrad)"/>
+                <path d="M 22,45 C 22,50 30,52 34,56 C 38,60 44,54 48,62 C 52,70 58,58 64,62 C 70,66 78,54 78,45" fill="#047857" opacity="0.3"/>
+                <!-- Floating leaf outlines -->
+                <path d="M 45,35 Q 40,25 35,32 Q 40,38 45,35 Z" fill="#34D399" />
+                <defs>
+                  <radialGradient id="mintGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#D1FAE5"/>
+                    <stop offset="60%" stop-color="#A7F3D0"/>
+                    <stop offset="100%" stop-color="#059669"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="space-y-2 z-10">
+            <h3 class="font-syne font-extrabold text-2xl group-hover:text-green-500 transition-colors">Mint Chill</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+              Fresh peppermint extract infused with crispy dark chocolate bits and sweet green tea leaves.
+            </p>
+            <div class="flex justify-between items-center pt-2">
+              <span class="font-bold text-xl">$7.50</span>
+              <button class="p-2.5 bg-chocolate text-creamWhite dark:bg-creamWhite dark:text-chocolate rounded-full hover:bg-slate-900 transition-colors hover-scale">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose IceTime Section -->
+  <section id="why-choose" class="py-24 relative overflow-hidden bg-creamWhite dark:bg-creamDark z-20">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+      
+      <!-- Left Column: Illustration -->
+      <div class="lg:col-span-5 relative flex items-center justify-center min-h-[350px]" id="why-illustrate">
+        <div class="absolute inset-0 bg-icePink/20 rounded-full filter blur-[80px] animate-pulse-glow"></div>
+        <!-- Modern luxury product vector illustration -->
+        <svg class="w-72 h-72 drop-shadow-2xl z-10 animate-float-slow" viewBox="0 0 200 200" fill="none">
+          <!-- Glass Jar Body -->
+          <rect x="50" y="60" width="100" height="110" rx="20" fill="rgba(255, 255, 255, 0.15)" stroke="#7DD3FC" stroke-width="4" />
+          <path d="M 50,80 L 150,80" stroke="#7DD3FC" stroke-width="2" opacity="0.3"/>
+          <line x1="75" y1="110" x2="125" y2="110" stroke="#FFFFFF" stroke-dasharray="5,5" stroke-width="2" opacity="0.5"/>
+          
+          <!-- Liquid Gold / Cream rising inside -->
+          <path d="M 50,110 Q 75,90 100,110 Q 125,130 150,110 L 150,160 Q 150,170 140,170 L 60,170 Q 50,170 50,160 Z" fill="url(#liquidGold)" opacity="0.8" />
+          
+          <!-- Cap (Chocolate) -->
+          <rect x="40" y="45" width="120" height="15" rx="7" fill="#7C4A2D" stroke="#FFF7ED" stroke-width="2"/>
+          
+          <!-- Floating Ice Crystals & Sprinkles on top of cap -->
+          <polygon points="100,20 106,30 100,40 94,30" fill="#7DD3FC" />
+          <circle cx="80" cy="28" r="4" fill="#F9A8D4" />
+          <circle cx="125" cy="32" r="3.5" fill="#FDE047" />
+
+          <defs>
+            <linearGradient id="liquidGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#F9A8D4"/>
+              <stop offset="50%" stop-color="#7DD3FC"/>
+              <stop offset="100%" stop-color="#FFF7ED"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Right Column: Values grid -->
+      <div class="lg:col-span-7 space-y-8 text-left z-20">
+        <div class="space-y-4">
+          <span class="text-iceBlue font-bold uppercase tracking-wider text-sm flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-4 h-4"></i> The IceTime Creed
+          </span>
+          <h2 class="font-syne font-extrabold text-4xl md:text-5xl leading-tight">Elevating Every Single Scoop</h2>
+          <div class="w-20 h-[3px] bg-gradient-to-r from-iceBlue to-icePink rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+          <!-- Item 1: Fresh Ingredients -->
+          <div class="flex gap-4 items-start scroll-reveal group">
+            <div class="p-4 rounded-2xl bg-iceBlue/20 text-chocolate dark:text-iceBlue group-hover:scale-110 transition-transform">
+              <i data-lucide="leaf" class="w-6 h-6"></i>
+            </div>
+            <div class="space-y-2">
+              <h3 class="font-syne font-extrabold text-xl">Fresh Ingredients</h3>
+              <p class="text-sm text-slate-600 dark:text-slate-300">100% organic heavy creams sourced directly from local pastures, sweetened with low-GI agave syrup.</p>
+            </div>
+          </div>
+
+          <!-- Item 2: Handcrafted Daily -->
+          <div class="flex gap-4 items-start scroll-reveal group">
+            <div class="p-4 rounded-2xl bg-icePink/20 text-chocolate dark:text-icePink group-hover:scale-110 transition-transform">
+              <i data-lucide="award" class="w-6 h-6"></i>
+            </div>
+            <div class="space-y-2">
+              <h3 class="font-syne font-extrabold text-xl">Handcrafted Daily</h3>
+              <p class="text-sm text-slate-600 dark:text-slate-300">Churned slowly in microscopic batches to prevent air bubbles, guaranteeing maximum density and creaminess.</p>
+            </div>
+          </div>
+
+          <!-- Item 3: Fast Delivery -->
+          <div class="flex gap-4 items-start scroll-reveal group">
+            <div class="p-4 rounded-2xl bg-yellow-100 text-chocolate group-hover:scale-110 transition-transform">
+              <i data-lucide="truck" class="w-6 h-6"></i>
+            </div>
+            <div class="space-y-2">
+              <h3 class="font-syne font-extrabold text-xl">Fast Sub-Zero Delivery</h3>
+              <p class="text-sm text-slate-600 dark:text-slate-300">Shipped inside custom dry-ice thermoses that preserve absolute structural integrity right to your doorstep.</p>
+            </div>
+          </div>
+
+          <!-- Item 4: Premium Quality -->
+          <div class="flex gap-4 items-start scroll-reveal group">
+            <div class="p-4 rounded-2xl bg-blue-100 text-chocolate group-hover:scale-110 transition-transform">
+              <i data-lucide="gem" class="w-6 h-6"></i>
+            </div>
+            <div class="space-y-2">
+              <h3 class="font-syne font-extrabold text-xl">Premium Quality</h3>
+              <p class="text-sm text-slate-600 dark:text-slate-300">No artificial colors, synthetic binders, or gelatin. Clean eats designed for clean confections.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Interactive Flavor Showcase Section (GSAP Horizontal Scroll) -->
+  <section id="showcase" class="relative z-20 bg-gradient-to-b from-creamWhite to-iceBlue/20 dark:from-creamDark dark:to-slate-900 select-none overflow-hidden">
+    <!-- GSAP scroll container wrapper -->
+    <div id="showcase-pin-container" class="h-screen flex flex-col justify-center relative">
+      <!-- Title Overlay -->
+      <div class="absolute top-10 left-6 right-6 md:left-12 max-w-xl z-30">
+        <span class="text-icePink font-bold uppercase tracking-wider text-xs flex items-center gap-1.5 mb-2">
+          <i data-lucide="compass" class="w-4 h-4"></i> Interactive Experience
+        </span>
+        <h2 class="font-syne font-extrabold text-3xl md:text-5xl leading-tight">Explore the Architecture of Taste</h2>
+      </div>
+
+      <!-- Horizontal scrolling track -->
+      <div id="showcase-track" class="flex flex-nowrap h-full items-center">
+        
+        <!-- Slide 1: The Waffle Cone Tower -->
+        <div class="w-screen h-full shrink-0 flex items-center justify-center px-6 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-12 pt-20">
+          <div class="flex flex-col justify-center text-left space-y-6 lg:pl-12">
+            <div class="text-4xl md:text-6xl font-syne font-extrabold text-slate-800 dark:text-creamWhite">01 / The Tower</div>
+            <div class="w-16 h-[2px] bg-icePink"></div>
+            <h3 class="font-syne font-extrabold text-3xl md:text-4xl text-icePink">Strawberry & Mint Double Stack</h3>
+            <p class="text-slate-600 dark:text-slate-300 max-w-md">
+              A classic structure engineered for luxury. Generous scoops of wild strawberry and organic mint leaf sits gracefully atop a hand-rolled vanilla waffle cone.
+            </p>
+          </div>
+          
+          <div class="flex items-center justify-center relative min-h-[300px]">
+            <div class="w-72 h-72 drop-shadow-2xl absolute animate-spin-slow bg-gradient-to-tr from-icePink/20 to-transparent rounded-full filter blur-xl"></div>
+            <!-- Giant vector scoop cone -->
+            <svg class="w-64 h-80 z-10 relative drop-shadow-[0_20px_35px_rgba(249,168,212,0.4)] transition-transform duration-500 hover:scale-105" viewBox="0 0 100 130" id="showcase-cone-svg">
+              <path d="M 50,85 L 35,125 L 65,125 Z" fill="#7C4A2D" stroke="#5C3317" stroke-width="2"/>
+              <!-- Grid lines -->
+              <path d="M 40,95 L 60,95 M 43,105 L 57,105 M 46,115 L 54,115" stroke="#FFF7ED" stroke-width="1.5" opacity="0.2"/>
+              <!-- Scoop 1 Mint -->
+              <circle cx="50" cy="70" r="24" fill="url(#showcaseMint)"/>
+              <!-- Scoop 2 Strawberry -->
+              <circle cx="50" cy="48" r="22" fill="url(#showcaseStrawberry)"/>
+              <!-- Cherry on top -->
+              <circle cx="50" cy="22" r="8" fill="#EF4444" id="showcase-cherry"/>
+              <path d="M 50,14 Q 58,4 62,10" stroke="#EF4444" stroke-width="2" stroke-linecap="round" fill="none"/>
+              <defs>
+                <radialGradient id="showcaseMint" cx="30%" cy="30%" r="70%">
+                  <stop offset="0%" stop-color="#D1FAE5"/><stop offset="100%" stop-color="#059669"/>
+                </radialGradient>
+                <radialGradient id="showcaseStrawberry" cx="30%" cy="30%" r="70%">
+                  <stop offset="0%" stop-color="#FFD6EC"/><stop offset="100%" stop-color="#D946EF"/>
+                </radialGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Slide 2: The Cosmic Tub -->
+        <div class="w-screen h-full shrink-0 flex items-center justify-center px-6 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-12 pt-20">
+          <div class="flex flex-col justify-center text-left space-y-6 lg:pl-12">
+            <div class="text-4xl md:text-6xl font-syne font-extrabold text-slate-800 dark:text-creamWhite">02 / The Pint</div>
+            <div class="w-16 h-[2px] bg-iceBlue"></div>
+            <h3 class="font-syne font-extrabold text-3xl md:text-4xl text-iceBlue">Sub-Zero Luxury Pint</h3>
+            <p class="text-slate-600 dark:text-slate-300 max-w-md">
+              Vacuum insulated container packed inside raw dry-ice particles. Explode the lid to reveal custom layers of pure Belgian chocolate and sweet cold-brew espresso.
+            </p>
+          </div>
+          
+          <div class="flex items-center justify-center relative min-h-[300px]" id="pint-container-trigger">
+            <div class="w-72 h-72 drop-shadow-2xl absolute animate-spin-slow bg-gradient-to-tr from-iceBlue/20 to-transparent rounded-full filter blur-xl"></div>
+            <!-- Giant vector pint showing explosion layers -->
+            <svg class="w-72 h-80 z-10 relative drop-shadow-[0_20px_35px_rgba(125,211,252,0.4)]" viewBox="0 0 100 130">
+              <!-- Lid floating above (Explosion Animation) -->
+              <g id="pint-lid" class="transition-transform duration-500">
+                <ellipse cx="50" cy="20" rx="30" ry="7" fill="#7C4A2D" stroke="#FFF7ED" stroke-width="1.5"/>
+                <path d="M 20,20 L 20,24 A 30,7 0 0 0 80,24 L 80,20 Z" fill="#7C4A2D"/>
+              </g>
+              <!-- Sparkles/Stars floating from the open tub -->
+              <path id="pint-stars" d="M 30,35 L 32,32 L 30,29 L 28,32 Z M 70,30 L 72,27 L 70,24 L 68,27 Z" fill="#FFF7ED" opacity="0.8"/>
+              <!-- Tub Body -->
+              <path d="M 25,45 L 32,105 C 33,112 40,115 50,115 C 60,115 67,112 68,105 L 75,45 Z" fill="rgba(255,255,255,0.1)" stroke="#7DD3FC" stroke-width="3" />
+              <!-- Branding label inside tub -->
+              <rect x="35" y="60" width="30" height="25" rx="4" fill="#F9A8D4" opacity="0.6"/>
+              <text x="50" y="76" font-family="Syne" font-size="10" font-weight="bold" text-anchor="middle" fill="#0B0F19">ICE</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Slide 3: The Crystal Sundae -->
+        <div class="w-screen h-full shrink-0 flex items-center justify-center px-6 md:px-24 grid grid-cols-1 lg:grid-cols-2 gap-12 pt-20">
+          <div class="flex flex-col justify-center text-left space-y-6 lg:pl-12">
+            <div class="text-4xl md:text-6xl font-syne font-extrabold text-slate-800 dark:text-creamWhite">03 / The Sundae</div>
+            <div class="w-16 h-[2px] bg-yellow-400"></div>
+            <h3 class="font-syne font-extrabold text-3xl md:text-4xl text-yellow-400">Glacial Crystal Sundae</h3>
+            <p class="text-slate-600 dark:text-slate-300 max-w-md">
+              Served inside hand-blown glass stemware. Floating mint flakes, toasted coconut shavings, and crystal candy diamonds create a multi-sensory dessert experience.
+            </p>
+          </div>
+          
+          <div class="flex items-center justify-center relative min-h-[300px]">
+            <div class="w-72 h-72 drop-shadow-2xl absolute animate-spin-slow bg-gradient-to-tr from-yellow-300/20 to-transparent rounded-full filter blur-xl"></div>
+            <!-- Giant vector Sundae SVG -->
+            <svg class="w-72 h-80 z-10 relative drop-shadow-[0_20px_35px_rgba(253,224,71,0.4)]" viewBox="0 0 100 130" id="showcase-sundae-svg">
+              <!-- Stem Glass -->
+              <path d="M 20,55 C 20,85 80,85 80,55 Z" fill="rgba(255,255,255,0.15)" stroke="#E0F2FE" stroke-width="2.5"/>
+              <line x1="50" y1="80" x2="50" y2="110" stroke="#E0F2FE" stroke-width="3"/>
+              <ellipse cx="50" cy="110" rx="20" ry="5" fill="rgba(255,255,255,0.15)" stroke="#E0F2FE" stroke-width="2.5"/>
+              
+              <!-- Ice cream layers inside -->
+              <circle cx="40" cy="50" r="18" fill="url(#sundaeChoc)"/>
+              <circle cx="60" cy="48" r="16" fill="url(#sundaeVanilla)"/>
+              
+              <!-- Chocolate sauce and wafer stick -->
+              <line x1="28" y1="20" x2="55" y2="50" stroke="#7C4A2D" stroke-width="5" stroke-linecap="round"/>
+              <path d="M 38,45 C 44,38 56,38 62,45" fill="none" stroke="#7C4A2D" stroke-width="3"/>
+              <defs>
+                <radialGradient id="sundaeChoc" cx="30%" cy="30%" r="70%">
+                  <stop offset="0%" stop-color="#A16A46"/><stop offset="100%" stop-color="#4C2814"/>
+                </radialGradient>
+                <radialGradient id="sundaeVanilla" cx="30%" cy="30%" r="70%">
+                  <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#E1D7B7"/>
+                </radialGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Special Offers Section & Scratch Coupon -->
+  <section id="offers" class="py-24 relative overflow-hidden bg-gradient-to-b from-iceBlue/20 to-creamWhite dark:from-slate-900 dark:to-creamDark z-20">
+    <!-- Media background loop for Special Offers: clear visibility of ice creams -->
+    <div class="absolute inset-0 w-full h-full pointer-events-none opacity-25 dark:opacity-10">
+      <video autoplay muted loop playsinline class="w-full h-full object-cover">
+        <source src="795450b40cae20a9407d551ed454081f_720w.mp4" type="video/mp4">
+      </video>
+      <!-- Gradient overlay to keep text legible -->
+      <div class="absolute inset-0 bg-gradient-to-b from-creamWhite/10 via-creamWhite/60 to-creamWhite dark:from-slate-900/10 dark:via-slate-900/60 dark:to-creamDark"></div>
+    </div>
+    <!-- Floating discount badges -->
+    <div class="absolute w-28 h-28 -top-10 -left-10 bg-icePink/20 rounded-full filter blur-xl animate-pulse"></div>
+    <div class="absolute top-1/3 right-10 px-4 py-2 rounded-xl bg-yellow-400 text-slate-900 font-bold rotate-12 shadow-lg animate-float-slow text-sm">
+      LIMITED QUANTITY
+    </div>
+    <div class="absolute bottom-10 left-10 px-4 py-2 rounded-xl bg-iceBlue text-slate-900 font-bold -rotate-12 shadow-lg animate-float-medium text-sm">
+      FREE DELIVERY
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+      
+      <!-- Left Column: Coupon details & Timer -->
+      <div class="lg:col-span-6 space-y-6 text-left">
+        <span class="text-icePink font-bold uppercase tracking-wider text-sm flex items-center gap-1.5">
+          <i data-lucide="tag" class="w-4 h-4"></i> Special Flash Offer
+        </span>
+        <h2 class="font-syne font-extrabold text-4xl md:text-5xl leading-tight">Melting Prices Before They Solidify</h2>
+        <div class="w-20 h-[3px] bg-gradient-to-r from-iceBlue to-icePink rounded-full"></div>
+        <p class="text-slate-600 dark:text-slate-300 max-w-lg">
+          Take part in our summer solstice flash sale. Unlock a hidden voucher of up to 50% off by dragging the melting slider on the interactive coupon card.
+        </p>
+
+        <!-- Countdown Timer -->
+        <div class="space-y-2">
+          <div class="text-xs uppercase tracking-widest text-slate-400 font-bold">Offer Ends In</div>
+          <div class="flex gap-4">
+            <!-- Hours -->
+            <div class="flex flex-col items-center p-3 rounded-2xl bg-white/50 dark:bg-slate-800/80 backdrop-blur-md shadow-md min-w-[70px]">
+              <span id="timer-hours" class="text-3xl font-extrabold font-syne text-chocolate dark:text-creamWhite">00</span>
+              <span class="text-[10px] uppercase text-slate-400 font-bold">Hours</span>
+            </div>
+            <!-- Minutes -->
+            <div class="flex flex-col items-center p-3 rounded-2xl bg-white/50 dark:bg-slate-800/80 backdrop-blur-md shadow-md min-w-[70px]">
+              <span id="timer-minutes" class="text-3xl font-extrabold font-syne text-chocolate dark:text-creamWhite">00</span>
+              <span class="text-[10px] uppercase text-slate-400 font-bold">Mins</span>
+            </div>
+            <!-- Seconds -->
+            <div class="flex flex-col items-center p-3 rounded-2xl bg-white/50 dark:bg-slate-800/80 backdrop-blur-md shadow-md min-w-[70px]">
+              <span id="timer-seconds" class="text-3xl font-extrabold font-syne text-chocolate dark:text-creamWhite">00</span>
+              <span class="text-[10px] uppercase text-slate-400 font-bold">Secs</span>
+            </div>
+            <!-- Milliseconds -->
+            <div class="flex flex-col items-center p-3 rounded-2xl bg-white/50 dark:bg-slate-800/80 backdrop-blur-md shadow-md min-w-[70px]">
+              <span id="timer-ms" class="text-3xl font-extrabold font-syne text-icePink">00</span>
+              <span class="text-[10px] uppercase text-slate-400 font-bold">Ms</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Coupon Card -->
+      <div class="lg:col-span-6 flex justify-center">
+        <!-- Coupon Card Wrapper -->
+        <div class="w-full max-w-sm rounded-3xl p-6 glassmorphism border-2 border-white/20 dark:border-white/5 shadow-2xl relative overflow-hidden flex flex-col justify-between h-96 group">
+          <!-- Melting overlay that gets peeled back -->
+          <div id="coupon-overlay" class="absolute inset-0 bg-gradient-to-br from-chocolate via-yellow-900 to-chocolate text-creamWhite p-8 flex flex-col justify-between z-30 transition-transform duration-500 origin-top">
+            <div class="flex justify-between items-start">
+              <span class="text-xs font-bold bg-yellow-700/60 px-3 py-1 rounded-full text-yellow-200">Locked Voucher</span>
+              <i data-lucide="lock" class="w-5 h-5 text-yellow-300"></i>
+            </div>
+            <div class="text-center space-y-2">
+              <div class="text-4xl font-syne font-extrabold">Slide to Melt</div>
+              <div class="text-xs text-yellow-200">Reveal your custom discount code</div>
+            </div>
+            <!-- Slide Track -->
+            <div class="relative w-full h-14 bg-yellow-950/60 rounded-full p-1.5 border border-yellow-700/30 flex items-center">
+              <div id="coupon-slider-thumb" class="w-11 h-11 bg-gradient-to-r from-iceBlue to-icePink rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-900 z-10 hover:scale-105 active:scale-95 transition-all">
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center text-xs tracking-wider font-bold text-yellow-200/50 pointer-events-none select-none">
+                MELT CREAM
+              </div>
+            </div>
+          </div>
+
+          <!-- Unlocked Voucher Core (Hidden Underneath) -->
+          <div class="w-full h-full flex flex-col justify-between text-center py-4 z-20">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-500 dark:text-green-300">Voucher Unlocked</span>
+              <h3 class="font-syne font-extrabold text-6xl text-chocolate dark:text-creamWhite mt-4">50% OFF</h3>
+              <p class="text-sm text-slate-500 mt-2">Applies to all scoops & pints today only</p>
+            </div>
+            
+            <!-- Code Reveal Box -->
+            <div class="border-2 border-dashed border-icePink rounded-2xl p-4 bg-icePink/10 relative group-hover:scale-105 transition-transform duration-300">
+              <div class="text-xs text-slate-400 font-bold uppercase tracking-widest">Copy Code</div>
+              <div class="text-2xl font-syne font-extrabold tracking-widest text-chocolate dark:text-creamWhite mt-1 flex items-center justify-center gap-2">
+                <span id="promo-code">ICETIME50</span>
+                <button id="copyBtn" class="p-1 hover:text-icePink transition-colors cursor-pointer" aria-label="Copy Code">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="text-[10px] text-slate-400">Terms & Conditions Apply. Maximum discount $50.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Customer Reviews Section (Infinite Double-Lane Marquee) -->
+  <section class="py-24 relative overflow-hidden bg-creamWhite dark:bg-creamDark z-20">
+    <div class="max-w-7xl mx-auto px-6 mb-12 text-center space-y-4">
+      <span class="text-iceBlue font-bold uppercase tracking-wider text-sm flex justify-center items-center gap-1.5">
+        <i data-lucide="message-square" class="w-4 h-4"></i> Sweet Gossip
+      </span>
+      <h2 class="font-syne font-extrabold text-4xl md:text-5xl">Loved By Ice Cream Admirers</h2>
+      <div class="w-20 h-[3px] bg-gradient-to-r from-iceBlue to-icePink mx-auto rounded-full"></div>
+    </div>
+
+    <!-- Infinite Marquee Lanes -->
+    <div class="space-y-6 relative w-full overflow-hidden select-none">
+      
+      <!-- Lane 1: Scrolling Left -->
+      <div class="flex gap-6 overflow-hidden py-4 w-[200vw]" id="marquee-lane-1">
+        <!-- Duplicate cards container to create continuous loop -->
+        <div class="flex gap-6 animate-marquee-left shrink-0">
+          
+          <!-- Review Card 1 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "Absolutely blew my mind. The Strawberry Bliss has actual strawberry seeds and is unbelievably creamy. Reminds me of pure heaven!"
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-icePink flex items-center justify-center font-bold text-slate-900">A</div>
+              <div>
+                <h4 class="font-bold text-sm">Amara Davis</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Review Card 2 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "The dry-ice shipping is incredible. The scoops were perfectly solid even in this summer heat. Mint Chill is now my daily obsession."
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-iceBlue flex items-center justify-center font-bold text-slate-900">B</div>
+              <div>
+                <h4 class="font-bold text-sm">Brandon Lee</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Review Card 3 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "Apple level animations indeed! The site is spectacular and ordering vanilla dream took under a minute. Highly recommend."
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-yellow-300 flex items-center justify-center font-bold text-slate-900">S</div>
+              <div>
+                <h4 class="font-bold text-sm">Sophie Jenkins</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Review Card 4 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "No synthetic binders, just pure luxury. You can taste the density differences in every bite. Organic ice cream at its absolute peak."
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-green-300 flex items-center justify-center font-bold text-slate-900">M</div>
+              <div>
+                <h4 class="font-bold text-sm">Marcus Vance</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Duplicated items for infinite scrolling loop -->
+        <div class="flex gap-6 animate-marquee-left shrink-0">
+          <!-- Repeat of 1-4 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"Absolutely blew my mind. The Strawberry Bliss has actual strawberry seeds and is unbelievably creamy. Reminds me of pure heaven!"</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-icePink flex items-center justify-center font-bold text-slate-900">A</div><div><h4 class="font-bold text-sm">Amara Davis</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"The dry-ice shipping is incredible. The scoops were perfectly solid even in this summer heat. Mint Chill is now my daily obsession."</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-iceBlue flex items-center justify-center font-bold text-slate-900">B</div><div><h4 class="font-bold text-sm">Brandon Lee</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"Apple level animations indeed! The site is spectacular and ordering vanilla dream took under a minute. Highly recommend."</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-yellow-300 flex items-center justify-center font-bold text-slate-900">S</div><div><h4 class="font-bold text-sm">Sophie Jenkins</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"No synthetic binders, just pure luxury. You can taste the density differences in every bite. Organic ice cream at its absolute peak."</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-green-300 flex items-center justify-center font-bold text-slate-900">M</div><div><h4 class="font-bold text-sm">Marcus Vance</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Lane 2: Scrolling Right -->
+      <div class="flex gap-6 overflow-hidden py-4 w-[200vw]" id="marquee-lane-2">
+        <div class="flex gap-6 animate-marquee-right shrink-0">
+          
+          <!-- Card 5 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "Mango Magic is incredible. Tastes exactly like fresh tropical mangoes, and the texture is as smooth as velvet. 10/10."
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-amber-400 flex items-center justify-center font-bold text-slate-900">L</div>
+              <div>
+                <h4 class="font-bold text-sm">Lucas Carter</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "A premium dessert experience. The packaging feels like a high-end watch box, and the ice cream is exceptionally light yet dense."
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-purple-300 flex items-center justify-center font-bold text-slate-900">V</div>
+              <div>
+                <h4 class="font-bold text-sm">Victoria Sterling</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 7 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "The Light mode is beautiful, but the Dark mode on this website is stunning. Tastes match the website vibe – completely premium."
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-teal-300 flex items-center justify-center font-bold text-slate-900">K</div>
+              <div>
+                <h4 class="font-bold text-sm">Kevin Durant</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 8 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">
+              "IceTime has elevated frozen desserts to an art form. The chocolate flakes are actual custom shavings. Pure elegance!"
+            </p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5">
+              <div class="w-10 h-10 rounded-full bg-red-300 flex items-center justify-center font-bold text-slate-900">R</div>
+              <div>
+                <h4 class="font-bold text-sm">Rachel Adams</h4>
+                <div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flex gap-6 animate-marquee-right shrink-0">
+          <!-- Repeat of 5-8 -->
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"Mango Magic is incredible. Tastes exactly like fresh tropical mangoes, and the texture is as smooth as velvet. 10/10."</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-amber-400 flex items-center justify-center font-bold text-slate-900">L</div><div><h4 class="font-bold text-sm">Lucas Carter</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"A premium dessert experience. The packaging feels like a high-end watch box, and the ice cream is exceptionally light yet dense."</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-purple-300 flex items-center justify-center font-bold text-slate-900">V</div><div><h4 class="font-bold text-sm">Victoria Sterling</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"The Light mode is beautiful, but the Dark mode on this website is stunning. Tastes match the website vibe – completely premium."</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-teal-300 flex items-center justify-center font-bold text-slate-900">K</div><div><h4 class="font-bold text-sm">Kevin Durant</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+          <div class="w-80 p-6 glassmorphism rounded-3xl border border-white/20 shadow-lg flex flex-col justify-between shrink-0">
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-normal">"IceTime has elevated frozen desserts to an art form. The chocolate flakes are actual custom shavings. Pure elegance!"</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-white/5"><div class="w-10 h-10 rounded-full bg-red-300 flex items-center justify-center font-bold text-slate-900">R</div><div><h4 class="font-bold text-sm">Rachel Adams</h4><div class="flex text-yellow-400"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i></div></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Custom Marquee Style animations in CSS -->
+    <style>
+      @keyframes marquee-left {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      @keyframes marquee-right {
+        0% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
+      }
+      .animate-marquee-left {
+        animation: marquee-left 25s linear infinite;
+      }
+      .animate-marquee-right {
+        animation: marquee-right 25s linear infinite;
+      }
+      #marquee-lane-1:hover .animate-marquee-left,
+      #marquee-lane-2:hover .animate-marquee-right {
+        animation-play-state: paused;
+      }
+    </style>
+  </section>
+
+  <!-- Gallery Section (Masonry Grid & Zoom Effect) -->
+  <section id="gallery" class="py-24 relative overflow-hidden bg-gradient-to-b from-creamWhite to-icePink/10 dark:from-creamDark dark:to-slate-900 z-20">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <span class="text-icePink font-bold uppercase tracking-wider text-sm flex justify-center items-center gap-1.5">
+          <i data-lucide="instagram" class="w-4 h-4"></i> Visual Feast
+        </span>
+        <h2 class="font-syne font-extrabold text-4xl md:text-5xl">Glacial Moments Captured</h2>
+        <div class="w-20 h-[3px] bg-gradient-to-r from-iceBlue to-icePink mx-auto rounded-full"></div>
+      </div>
+
+      <!-- Masonry Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="masonry-gallery">
+        
+        <!-- Gallery Card 1: Melting Waffle -->
+        <div class="gallery-item relative overflow-hidden rounded-3xl group shadow-lg aspect-square sm:aspect-auto sm:h-96 cursor-pointer border border-white/20">
+          <!-- Background SVG Vector Scene of Ice Cream dripping -->
+          <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full object-cover bg-gradient-to-tr from-icePink to-indigo-100 group-hover:scale-110 transition-transform duration-500">
+            <ellipse cx="50" cy="50" rx="30" ry="30" fill="url(#galGrad1)" opacity="0.8"/>
+            <path d="M 20,40 L 40,80 L 60,40 Z" fill="#7C4A2D"/>
+            <path d="M 20,40 C 20,30 50,20 50,40 C 50,20 80,30 80,40 C 80,50 20,50 20,40" fill="#F9A8D4"/>
+            <defs>
+              <radialGradient id="galGrad1" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#E272AA"/><stop offset="100%" stop-color="#7C4A2D"/>
+              </radialGradient>
+            </defs>
+          </svg>
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left z-20">
+            <h4 class="font-syne font-bold text-xl">Dripping Bliss</h4>
+            <p class="text-xs text-slate-200">Strawberry & Vanilla combo</p>
+          </div>
+        </div>
+
+        <!-- Gallery Card 2: Sundae Detail -->
+        <div class="gallery-item relative overflow-hidden rounded-3xl group shadow-lg h-[450px] cursor-pointer border border-white/20">
+          <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full object-cover bg-gradient-to-tr from-indigo-200 to-purple-100 group-hover:scale-110 transition-transform duration-500">
+            <circle cx="50" cy="40" r="22" fill="#7DD3FC"/>
+            <path d="M 30,50 C 30,70 70,70 70,50" fill="none" stroke="#7C4A2D" stroke-width="4"/>
+            <!-- Crystal details -->
+            <polygon points="50,15 55,22 50,30 45,22" fill="#E0F2FE" />
+          </svg>
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left z-20">
+            <h4 class="font-syne font-bold text-xl">Glacial Scoop</h4>
+            <p class="text-xs text-slate-200">Blueberry frost under spotlight</p>
+          </div>
+        </div>
+
+        <!-- Gallery Card 3: Floating mint -->
+        <div class="gallery-item relative overflow-hidden rounded-3xl group shadow-lg h-72 cursor-pointer border border-white/20">
+          <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full object-cover bg-gradient-to-tr from-green-100 to-iceBlue group-hover:scale-110 transition-transform duration-500">
+            <path d="M 50,20 C 20,40 30,70 50,80 C 70,70 80,40 50,20" fill="#34D399"/>
+            <circle cx="50" cy="50" r="10" fill="#FFF7ED"/>
+          </svg>
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left z-20">
+            <h4 class="font-syne font-bold text-xl">Mint Leaf infusion</h4>
+            <p class="text-xs text-slate-200">Harvested from mountain springs</p>
+          </div>
+        </div>
+
+        <!-- Gallery Card 4: Chocolate blocks -->
+        <div class="gallery-item relative overflow-hidden rounded-3xl group shadow-lg h-80 cursor-pointer border border-white/20">
+          <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full object-cover bg-gradient-to-tr from-amber-900 to-chocolate group-hover:scale-110 transition-transform duration-500">
+            <rect x="25" y="25" width="20" height="20" rx="3" fill="#5C3317"/>
+            <rect x="55" y="25" width="20" height="20" rx="3" fill="#5C3317"/>
+            <rect x="25" y="55" width="20" height="20" rx="3" fill="#5C3317"/>
+            <rect x="55" y="55" width="20" height="20" rx="3" fill="#5C3317"/>
+          </svg>
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left z-20">
+            <h4 class="font-syne font-bold text-xl">Belgian Dark cacao</h4>
+            <p class="text-xs text-slate-200">Double roasted cacao butter</p>
+          </div>
+        </div>
+
+        <!-- Gallery Card 5: Modern packaging -->
+        <div class="gallery-item relative overflow-hidden rounded-3xl group shadow-lg h-96 cursor-pointer border border-white/20">
+          <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full object-cover bg-gradient-to-tr from-iceBlue to-yellow-100 group-hover:scale-110 transition-transform duration-500">
+            <rect x="30" y="30" width="40" height="50" rx="5" fill="#FFF7ED" stroke="#F9A8D4" stroke-width="2"/>
+            <ellipse cx="50" cy="55" rx="10" ry="10" fill="#7C4A2D"/>
+          </svg>
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left z-20">
+            <h4 class="font-syne font-bold text-xl">Thermos Cylinder</h4>
+            <p class="text-xs text-slate-200">Keeps scoops solid for 24 hours</p>
+          </div>
+        </div>
+
+        <!-- Gallery Card 6: Ice crystals forming -->
+        <div class="gallery-item relative overflow-hidden rounded-3xl group shadow-lg h-72 cursor-pointer border border-white/20">
+          <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full object-cover bg-gradient-to-tr from-purple-200 to-indigo-300 group-hover:scale-110 transition-transform duration-500">
+            <polygon points="50,15 90,50 50,90 10,50" fill="#E0F2FE" />
+            <polygon points="50,30 70,50 50,70 30,50" fill="#7DD3FC" />
+          </svg>
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left z-20">
+            <h4 class="font-syne font-bold text-xl">Glacial Hexagon</h4>
+            <p class="text-xs text-slate-200">Macroscopic ice crystals formed on scroll</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer with animated wave waves -->
+  <footer class="relative bg-gradient-to-b from-creamWhite to-icePink/20 dark:from-creamDark dark:to-slate-950 pt-24 pb-12 select-none overflow-hidden border-t border-slate-200/50 dark:border-white/5">
+    
+    <!-- Animated Layered SVG Wave Background -->
+    <div class="absolute top-0 left-0 w-full overflow-hidden leading-[0] z-10">
+      <svg class="relative block w-full h-[60px] md:h-[100px] text-iceBlue/10 dark:text-slate-800" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,40 C150,90 350,20 500,60 C650,100 850,30 1000,50 C1150,70 1200,60 1200,60 L1200,0 L0,0 Z" fill="currentColor" class="wave-slide-1"></path>
+        <path d="M0,30 C200,10 400,80 600,40 C800,0 1000,60 1200,30 L1200,0 L0,0 Z" fill="currentColor" class="wave-slide-2" opacity="0.5"></path>
+      </svg>
+    </div>
+
+    <!-- Style waves movement -->
+    <style>
+      @keyframes wave-slide {
+        0% { transform: translateX(0); }
+        50% { transform: translateX(-5%); }
+        100% { transform: translateX(0); }
+      }
+      .wave-slide-1 {
+        animation: wave-slide 10s ease-in-out infinite;
+      }
+      .wave-slide-2 {
+        animation: wave-slide 15s ease-in-out infinite;
+      }
+    </style>
+
+    <div class="max-w-7xl mx-auto px-6 relative z-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 items-start">
+      
+      <!-- Logo and Description -->
+      <div class="lg:col-span-4 space-y-6">
+        <svg class="h-10 w-auto filter drop-shadow-sm" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,38 L 22,50 L 38,50 Z" fill="#7C4A2D" stroke="#7C4A2D" stroke-width="2" stroke-linejoin="round" />
+          <path d="M 20,38 C 16,38 14,32 18,28 C 16,22 22,18 26,20 C 30,16 38,18 38,24 C 42,24 44,30 42,34 C 40,38 38,38 38,38 L 30,39 Z" fill="url(#footerScoopGrad)" />
+          <polygon points="30,12 34,18 30,24 26,18" fill="#7DD3FC" opacity="0.9" />
+          <text x="60" y="38" font-family="Syne" font-weight="800" font-size="26" class="fill-chocolate dark:fill-creamWhite">
+            <tspan fill="url(#footerTextGrad)">Ice</tspan>Time
+          </text>
+          <defs>
+            <linearGradient id="footerScoopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#F9A8D4"/><stop offset="100%" stop-color="#7DD3FC"/>
+            </linearGradient>
+            <linearGradient id="footerTextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#7DD3FC"/><stop offset="100%" stop-color="#F9A8D4"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <p class="text-sm text-slate-500 dark:text-slate-400 font-normal leading-relaxed max-w-sm">
+          An elite food venture constructing luxury frozen desserts and structural waffle confections for modern tastes.
+        </p>
+        <div class="flex gap-4">
+          <a href="#" class="p-3 bg-white dark:bg-slate-800 rounded-full hover:text-icePink shadow-md hover-scale"><i data-lucide="facebook" class="w-4 h-4"></i></a>
+          <a href="#" class="p-3 bg-white dark:bg-slate-800 rounded-full hover:text-icePink shadow-md hover-scale"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+          <a href="#" class="p-3 bg-white dark:bg-slate-800 rounded-full hover:text-icePink shadow-md hover-scale"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+        </div>
+      </div>
+
+      <!-- Links Column 1 -->
+      <div class="lg:col-span-2 space-y-4 text-left">
+        <h4 class="font-syne font-extrabold text-sm uppercase tracking-wider text-slate-400">Discover</h4>
+        <ul class="space-y-2 text-sm text-slate-500 dark:text-slate-400 font-medium">
+          <li><a href="#flavors" class="hover:text-icePink transition-colors">Menu Flavors</a></li>
+          <li><a href="#showcase" class="hover:text-icePink transition-colors">Showcase</a></li>
+          <li><a href="#offers" class="hover:text-icePink transition-colors">Vouchers</a></li>
+          <li><a href="#gallery" class="hover:text-icePink transition-colors">Visuals</a></li>
+        </ul>
+      </div>
+
+      <!-- Links Column 2 -->
+      <div class="lg:col-span-2 space-y-4 text-left">
+        <h4 class="font-syne font-extrabold text-sm uppercase tracking-wider text-slate-400">Company</h4>
+        <ul class="space-y-2 text-sm text-slate-500 dark:text-slate-400 font-medium">
+          <li><a href="#" class="hover:text-icePink transition-colors">Artisans</a></li>
+          <li><a href="#" class="hover:text-icePink transition-colors">Farms Sourcing</a></li>
+          <li><a href="#" class="hover:text-icePink transition-colors">Careers</a></li>
+          <li><a href="#" class="hover:text-icePink transition-colors">Franchises</a></li>
+        </ul>
+      </div>
+
+      <!-- Newsletter Column -->
+      <div class="lg:col-span-4 space-y-4 text-left">
+        <h4 class="font-syne font-extrabold text-sm uppercase tracking-wider text-slate-400">Join the Newsletter</h4>
+        <p class="text-sm text-slate-500 dark:text-slate-400 font-normal">Stay up to date with new custom monthly flavor rollouts.</p>
+        <form id="newsletter-form" class="space-y-2 relative">
+          <div class="flex gap-2">
+            <input type="email" required placeholder="Enter email" class="w-full px-4 py-3 rounded-2xl glassmorphism border border-white/20 focus:outline-none focus:border-icePink text-sm" />
+            <button type="submit" class="px-5 bg-gradient-to-r from-icePink to-iceBlue text-slate-900 rounded-2xl font-bold hover:scale-105 active:scale-95 transition-all text-sm flex items-center justify-center cursor-pointer">
+              Submit
+            </button>
+          </div>
+          <span id="newsletter-msg" class="absolute -bottom-6 left-0 text-xs text-green-500 font-bold hidden">Subscribed successfully! Check your inbox.</span>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Divider Line -->
+    <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-slate-200/50 dark:border-white/5 text-center text-xs text-slate-400 font-normal flex flex-col sm:flex-row justify-between items-center gap-4 relative z-20">
+      <div>&copy; 2026 IceTime Inc. All desserts handcrafted with local ingredients.</div>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-icePink transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-icePink transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script Logic -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // 1. Theme Toggle Logic
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const htmlEl = document.documentElement;
+    
+    // Check stored setting
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      htmlEl.classList.add('dark');
+    } else {
+      htmlEl.classList.remove('dark');
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      if (htmlEl.classList.contains('dark')) {
+        htmlEl.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        htmlEl.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    // 2. Custom Cursor Logic (Desktops only)
+    const cursor = document.getElementById('customCursor');
+    const cursorDot = document.getElementById('customCursorDot');
+    
+    document.addEventListener('mousemove', (e) => {
+      gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+      gsap.to(cursorDot, { x: e.clientX, y: e.clientY, duration: 0.02 });
+    });
+
+    document.querySelectorAll('.hover-scale, button, a, input, select, textarea, .tilt-card').forEach(item => {
+      item.addEventListener('mouseenter', () => cursor.classList.add('hover-active'));
+      item.addEventListener('mouseleave', () => cursor.classList.remove('hover-active'));
+    });
+
+    // 3. Preloader Progress & Smooth Intro Transitions
+    const preloader = document.getElementById('preloader');
+    const preloadProgress = document.getElementById('preload-progress');
+    let progress = 0;
+    
+    // Simulate loading progress
+    const progressInterval = setInterval(() => {
+      progress += Math.floor(Math.random() * 15) + 5;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(progressInterval);
+        hidePreloader();
+      }
+      preloadProgress.style.width = `${progress}%`;
+    }, 150);
+
+    function hidePreloader() {
+      // Fade out loading screen with GSAP
+      gsap.to(preloader, {
+        yPercent: -100,
+        duration: 1.2,
+        ease: 'power4.inOut',
+        onComplete: () => {
+          preloader.classList.add('hidden');
+          // Trigger Hero entry animations once preloader is gone
+          runHeroAnimations();
+        }
+      });
+    }
+
+    // Fallback if loading is extremely fast
+    window.addEventListener('load', () => {
+      if (progress < 100) {
+        progress = 100;
+        preloadProgress.style.width = '100%';
+        clearInterval(progressInterval);
+        setTimeout(hidePreloader, 400);
+      }
+    });
+
+    // 4. Custom Canvas Particle Background (Ice Crystal Trail & Floating Crystals on Scroll)
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let particles = [];
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor(x, y, isScrollCrystal = false) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * (isScrollCrystal ? 12 : 6) + 4;
+        this.speedX = Math.random() * 2 - 1;
+        this.speedY = isScrollCrystal ? -(Math.random() * 1.5 + 0.5) : Math.random() * 2 - 1;
+        this.alpha = 1;
+        this.rotation = Math.random() * Math.PI;
+        this.rotSpeed = Math.random() * 0.02 - 0.01;
+        this.isScroll = isScrollCrystal;
+        this.points = Math.random() > 0.5 ? 6 : 4; // Hexagonal or diamond crystal shapes
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.rotation += this.rotSpeed;
+        
+        if (this.isScroll) {
+          this.alpha -= 0.005;
+        } else {
+          this.alpha -= 0.02; // Trail fades faster
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.beginPath();
+        
+        ctx.strokeStyle = `rgba(125, 211, 252, ${this.alpha * 0.7})`;
+        ctx.fillStyle = `rgba(249, 168, 212, ${this.alpha * 0.25})`;
+        ctx.lineWidth = 1.5;
+
+        // Draw diamond or hexagon crystal
+        for (let i = 0; i < this.points; i++) {
+          const angle = (i * Math.PI * 2) / this.points;
+          const px = Math.cos(angle) * this.size;
+          const py = Math.sin(angle) * this.size;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Spawn mouse trail particles
+    document.addEventListener('mousemove', (e) => {
+      if (Math.random() < 0.25) {
+        particles.push(new Particle(e.clientX, e.clientY));
+      }
+    });
+
+    // Spawn crystals on scroll
+    let lastScrollTop = 0;
+    window.addEventListener('scroll', () => {
+      const st = window.pageYOffset || document.documentElement.scrollTop;
+      if (st > lastScrollTop && Math.random() < 0.3) {
+        // Scrolling down, spawn crystal at random bottom coord
+        particles.push(new Particle(Math.random() * canvas.width, canvas.height + 10, true));
+      }
+      lastScrollTop = st <= 0 ? 0 : st;
+    });
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+        
+        // Remove dead particles
+        if (particles[i].alpha <= 0 || particles[i].y < -20) {
+          particles.splice(i, 1);
+          i--;
+        }
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // 5. Run Hero Intro Animations
+    function runHeroAnimations() {
+      gsap.timeline()
+        .from('header', { y: -50, opacity: 0, duration: 1, ease: 'power3.out' })
+        .from('h1', { y: 80, opacity: 0, duration: 1.2, ease: 'power4.out' }, '-=0.7')
+        .from('h1 p, h1 span svg', { opacity: 0, duration: 0.8 }, '-=0.5')
+        .from('p', { y: 30, opacity: 0, duration: 1, ease: 'power3.out' }, '-=0.8')
+        .from('a[href="#flavors"], a[href="#offers"]', { y: 20, opacity: 0, duration: 0.8, stagger: 0.2, ease: 'power3.out' }, '-=0.8')
+        .from('#hero-parallax-container [data-depth]', {
+          scale: 0.5,
+          opacity: 0,
+          duration: 1.5,
+          stagger: 0.15,
+          ease: 'elastic.out(1, 0.6)'
+        }, '-=1.2');
+    }
+
+    // 6. Interactive Hero Parallax Mouse Follow
+    const heroParallax = document.getElementById('hero-parallax-container');
+    heroParallax.addEventListener('mousemove', (e) => {
+      const rect = heroParallax.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      
+      document.querySelectorAll('#hero-parallax-container [data-depth]').forEach(el => {
+        const depth = parseFloat(el.getAttribute('data-depth'));
+        gsap.to(el, {
+          x: x * depth,
+          y: y * depth,
+          duration: 0.6,
+          ease: 'power2.out'
+        });
+      });
+    });
+
+    heroParallax.addEventListener('mouseleave', () => {
+      document.querySelectorAll('#hero-parallax-container [data-depth]').forEach(el => {
+        gsap.to(el, { x: 0, y: 0, duration: 1, ease: 'elastic.out(1, 0.8)' });
+      });
+    });
+
+    // 7. 3D Tilt Hover Animation for Signature Flavor Cards
+    document.querySelectorAll('.tilt-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const xc = rect.width / 2;
+        const yc = rect.height / 2;
+        
+        const tiltX = -(y - yc) / 10;
+        const tiltY = (x - xc) / 10;
+        
+        card.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.03)`;
+        card.style.boxShadow = `${-tiltY * 2}px ${tiltX * 2}px 30px rgba(0,0,0,0.15)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+        card.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)';
+      });
+    });
+
+    // 8. Why Choose us Scroll-Triggered Reveals
+    gsap.registerPlugin(ScrollTrigger);
+    
+    gsap.from('#why-illustrate svg', {
+      scrollTrigger: {
+        trigger: '#why-choose',
+        start: 'top 80%',
+      },
+      scale: 0.6,
+      opacity: 0,
+      duration: 1.5,
+      ease: 'elastic.out(1, 0.5)'
+    });
+
+    gsap.from('.scroll-reveal', {
+      scrollTrigger: {
+        trigger: '#why-choose',
+        start: 'top 75%',
+      },
+      y: 40,
+      opacity: 0,
+      duration: 1,
+      stagger: 0.2,
+      ease: 'power3.out'
+    });
+
+    // 9. Interactive Flavor Showcase (Horizontal Scroll PIN)
+    const showcasePin = document.getElementById('showcase-pin-container');
+    const showcaseTrack = document.getElementById('showcase-track');
+    
+    gsap.to(showcaseTrack, {
+      x: () => -(showcaseTrack.scrollWidth - window.innerWidth),
+      ease: 'none',
+      scrollTrigger: {
+        trigger: showcasePin,
+        pin: true,
+        scrub: 1,
+        start: 'top top',
+        end: () => `+=${showcaseTrack.scrollWidth - window.innerWidth}`,
+        invalidateOnRefresh: true,
+      }
+    });
+
+    // Rotate SVG elements dynamically while scrolling in the Showcase
+    gsap.to('#showcase-cone-svg', {
+      rotate: 360,
+      scrollTrigger: {
+        trigger: '#showcase',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5
+      }
+    });
+
+    gsap.to('#pint-lid', {
+      y: -60,
+      x: 30,
+      rotate: 45,
+      scrollTrigger: {
+        trigger: '#showcase',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5
+      }
+    });
+
+    gsap.to('#showcase-sundae-svg', {
+      rotate: -180,
+      scrollTrigger: {
+        trigger: '#showcase',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5
+      }
+    });
+
+    // 10. Countdown Timer Logic (Sale ends at end of today)
+    function updateTimer() {
+      const now = new Date();
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      const diff = endOfDay.getTime() - now.getTime();
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      const ms = Math.floor((diff % 1000) / 10);
+      
+      document.getElementById('timer-hours').innerText = hours.toString().padStart(2, '0');
+      document.getElementById('timer-minutes').innerText = minutes.toString().padStart(2, '0');
+      document.getElementById('timer-seconds').innerText = seconds.toString().padStart(2, '0');
+      document.getElementById('timer-ms').innerText = ms.toString().padStart(2, '0');
+      
+      requestAnimationFrame(updateTimer);
+    }
+    updateTimer();
+
+    // 11. Interactive Coupon Slide to Melt
+    const sliderThumb = document.getElementById('coupon-slider-thumb');
+    const overlay = document.getElementById('coupon-overlay');
+    
+    let isDragging = false;
+    let startX = 0;
+    
+    sliderThumb.addEventListener('mousedown', startDrag);
+    sliderThumb.addEventListener('touchstart', startDrag);
+    
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('touchmove', drag);
+    
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+
+    function startDrag(e) {
+      isDragging = true;
+      startX = e.clientX || e.touches[0].clientX;
+      sliderThumb.style.cursor = 'grabbing';
+    }
+
+    function drag(e) {
+      if (!isDragging) return;
+      
+      const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+      const trackWidth = sliderThumb.parentElement.clientWidth;
+      const thumbWidth = sliderThumb.clientWidth;
+      
+      let deltaX = clientX - sliderThumb.parentElement.getBoundingClientRect().left - thumbWidth / 2;
+      const maxDelta = trackWidth - thumbWidth - 12; // padding offset
+      
+      if (deltaX < 6) deltaX = 6;
+      if (deltaX > maxDelta) deltaX = maxDelta;
+      
+      gsap.to(sliderThumb, { x: deltaX, duration: 0.1 });
+      
+      // Calculate melt percentage
+      const percent = (deltaX - 6) / (maxDelta - 6);
+      
+      // Animate the locked top layer folding up like melting butter
+      gsap.to(overlay, {
+        yPercent: -percent * 110,
+        skewX: percent * 15,
+        opacity: 1 - percent,
+        duration: 0.2
+      });
+
+      if (percent >= 0.95) {
+        isDragging = false;
+        // Snap fully open
+        gsap.to(overlay, { yPercent: -120, skewX: 0, opacity: 0, duration: 0.5, ease: 'power3.out' });
+        // Scale and pop the inner text code container
+        gsap.from('#promo-code', { scale: 0.8, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
+      }
+    }
+
+    function endDrag() {
+      if (!isDragging) return;
+      isDragging = false;
+      sliderThumb.style.cursor = 'grab';
+      
+      // Reset position if not fully slid open
+      gsap.to(sliderThumb, { x: 0, duration: 0.4, ease: 'power2.out' });
+      gsap.to(overlay, { yPercent: 0, skewX: 0, opacity: 1, duration: 0.4, ease: 'power2.out' });
+    }
+
+    // Copy Voucher Code
+    const copyBtn = document.getElementById('copyBtn');
+    const promoCode = document.getElementById('promo-code').innerText;
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(promoCode).then(() => {
+        copyBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-500"></i>';
+        lucide.createIcons();
+        setTimeout(() => {
+          copyBtn.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i>';
+          lucide.createIcons();
+        }, 2000);
+      });
+    });
+
+    // 12. Newsletter Submit Micro-particle animation
+    const newsletterForm = document.getElementById('newsletter-form');
+    const newsletterMsg = document.getElementById('newsletter-msg');
+    
+    newsletterForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Show confirmation message
+      newsletterMsg.classList.remove('hidden');
+      gsap.from(newsletterMsg, { y: 10, opacity: 0, duration: 0.5 });
+      
+      // Clear input
+      newsletterForm.querySelector('input').value = '';
+      
+      setTimeout(() => {
+        gsap.to(newsletterMsg, { opacity: 0, duration: 0.5, onComplete: () => newsletterMsg.classList.add('hidden') });
+      }, 5000);
+    });
+
+    // 13. Mobile menu toggle drawer
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    
+    mobileMenuBtn.addEventListener('click', () => {
+      if (mobileDrawer.classList.contains('hidden')) {
+        mobileDrawer.classList.remove('hidden');
+        gsap.from(mobileDrawer, { y: -20, opacity: 0, duration: 0.4, ease: 'power3.out' });
+      } else {
+        gsap.to(mobileDrawer, {
+          y: -20,
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => mobileDrawer.classList.add('hidden')
+        });
+      }
+    });
+
+    // Close mobile drawer on navigation click
+    document.querySelectorAll('#mobileDrawer a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileDrawer.classList.add('hidden');
+      });
+    });
+  </script>
+</body>
+</html>
